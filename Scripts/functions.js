@@ -1,50 +1,37 @@
 $(document).on("ready", function(){
-	$("#cerrar").on("click", function(){
-		var closeTabs = new Array();
-		var allTabs = new Array();
-		var openTabs = new Array();
+	$("#separar").on("click", function(){
+		var closeTabsId = new Array();
+		var closedTabsURL = {url: new Array()};
 		var keep;
-		var process = true;
-		var keyword = document.getElementById('Cerrar').value;
+		var keyword = {title: document.getElementById('Separar').value};
 		console.log("entra");
-		chrome.tabs.query("keyword", function(tabs){
-			for(var i = 0; i < tabs.length; i++){
-				closeTabs[i] = tabs[i].id;
-				}
-			});
-		if(process == true){
-			chrome.tabs.remove(closeTabs, function(){});
+		chrome.tabs.query(keyword, function(tabs){
+		console.log("Query");
+
+
+		/*Gets the keyword including tabs*/
+		for(var i = 0; i < tabs.length; i++){
+			closeTabsId[i] = tabs[i].id;
+			closedTabsURL.url[i] = tabs[i].url;
+			console.log(closeTabsId[i]);
 		}
-		else{
-			chrome.tabs.query({}, function(tabs){
-			for(var i = 0; i < tabs.length; i++){
-				allTabs[i] = tabs[i].id;
-				}
-			});
-			for(var i = 0; i < allTabs.length; i++){
-				keep = false;
-				for(var j = 0; j < closeTabs.length; j++){
-					if(allTabs[i] == closeTabs[j]){
-						keep = true;
-						break;
-					}
-				}
-				if(!keep){
-					chrome.tabs.remove(allTabs[i], function(){});
-				}
-			}
-		}
+		chrome.windows.create(closedTabsURL, function(){});
+
+		chrome.tabs.remove(closeTabsId, function(){});
+		});
+	});
+
+	$("#guardar").on("click", function(){
+		
 	});
 });
 
-function cerrar(){
-	
-}
 
-function separar(keyword){
 
-}
 
-function guardar(keyword){
-
-}
+/*
+MEJORAS:
+	# tabs found
+	ignoreCase
+	guardar
+*/
