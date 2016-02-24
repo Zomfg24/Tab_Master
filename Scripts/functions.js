@@ -18,16 +18,26 @@ $(document).on("ready", function(){
 			allTabsTitle[i] = allTabsTitle[i].toLowerCase();
 		}
 
+		var moveTabsFirstID;
 		for(var i = 0; i < tabs.length; i++)
 		{
 			if(allTabsTitle[i].indexOf(keyword.title) > -1)
 			{
-				moveTabsId[cont] = allTabsId[i];
-				cont++;
+				if(cont == 0)
+				{
+					moveTabsFirstID = allTabsId[i];
+					cont++;
+				}
+				else
+				{
+					moveTabsId[cont-1] = allTabsId[i];
+					cont++;
+				}
 			}
 		}
 
-		chrome.windows.create({}, function(windowObject){
+		var windowsCreateData = {tabId: moveTabsFirstID};
+		chrome.windows.create(windowsCreateData, function(windowObject){
 			moveProp.windowId = windowObject.id;
 			chrome.tabs.move(moveTabsId, moveProp, function(){});
 			});
