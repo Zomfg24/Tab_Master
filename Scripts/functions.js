@@ -9,39 +9,42 @@ $(document).on("ready", function(){
 		var moveProp = {windowId: "", index: -1};
 		var cont = 0;
 		var keyword = {title: document.getElementById('Separar').value};
-		chrome.tabs.query({}, function(tabs){
-		keyword.title = keyword.title.toLowerCase();
-		/*Gets the keyword including tabs*/
-		for(var i = 0; i < tabs.length; i++){
-			allTabsId[i] = tabs[i].id;
-			allTabsTitle[i] = tabs[i].title;
-			allTabsTitle[i] = allTabsTitle[i].toLowerCase();
-		}
-
-		var moveTabsFirstID;
-		for(var i = 0; i < tabs.length; i++)
+		if (keyword.title != "")
 		{
-			if(allTabsTitle[i].indexOf(keyword.title) > -1)
+			chrome.tabs.query({}, function(tabs){
+			keyword.title = keyword.title.toLowerCase();
+			/*Gets the keyword including tabs*/
+			for(var i = 0; i < tabs.length; i++){
+				allTabsId[i] = tabs[i].id;
+				allTabsTitle[i] = tabs[i].title;
+				allTabsTitle[i] = allTabsTitle[i].toLowerCase();
+			}
+
+			var moveTabsFirstID;
+			for(var i = 0; i < tabs.length; i++)
 			{
-				if(cont == 0)
+				if(allTabsTitle[i].indexOf(keyword.title) > -1)
 				{
-					moveTabsFirstID = allTabsId[i];
-					cont++;
-				}
-				else
-				{
-					moveTabsId[cont-1] = allTabsId[i];
-					cont++;
+					if(cont == 0)
+					{
+						moveTabsFirstID = allTabsId[i];
+						cont++;
+					}
+					else
+					{
+						moveTabsId[cont-1] = allTabsId[i];
+						cont++;
+					}
 				}
 			}
-		}
 
-		var windowsCreateData = {tabId: moveTabsFirstID};
-		chrome.windows.create(windowsCreateData, function(windowObject){
-			moveProp.windowId = windowObject.id;
-			chrome.tabs.move(moveTabsId, moveProp, function(){});
+			var windowsCreateData = {tabId: moveTabsFirstID};
+			chrome.windows.create(windowsCreateData, function(windowObject){
+				moveProp.windowId = windowObject.id;
+				chrome.tabs.move(moveTabsId, moveProp, function(){});
+				});
 			});
-		});
+		}
 	});
 
 	$("#guardar").on("click", function(){
@@ -95,12 +98,36 @@ $(document).on("ready", function(){
 			}
 		});
 
-		var parametro = "Bookmarks guardadas en el folder: \"" + keyword.title + '\"';
+		var parametro = "Saved in Bookmark folder: \"" + keyword.title + '\"';
 		document.getElementById('invTxtBox').innerHTML = parametro;
 		$("#invisibleTxtBox").show();
 
 		});
 	});
+
+	$("#merge").on("click", function(){
+		var allTabsId = new Array();
+		var allTabsTitle = new Array();
+		var moveTabsId = new Array();
+		var windowObject = {id:""};
+		var moveProp = {windowId: "", index: -1};
+		var cont = 0;
+		chrome.tabs.query({}, function(tabs){
+
+		for(var i=1; i<tabs.length; i++)
+		{
+			moveTabsId[i-1] = tabs[i].id;
+		}
+
+		var windowsCreateData = {tabId: tabs[0].id};
+		chrome.windows.create(windowsCreateData, function(windowObject){
+			moveProp.windowId = windowObject.id;
+			chrome.tabs.move(moveTabsId, moveProp, function(){});
+			});
+		});
+
+	});
+
 });
 
 
@@ -110,6 +137,4 @@ $(document).on("ready", function(){
 MEJORAS:
 	# tabs found
 	evaluar todo el cuerpo oh yeah
-	ignoreCase
-	guardar
 */
