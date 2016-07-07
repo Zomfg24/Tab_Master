@@ -1,136 +1,117 @@
 $(document).on("ready", function(){
+	$('#guardarAllInvisible').hide();
     $("#invisibleTxtBox").hide();
-	$("#Separar").focus();
-	$("#separar").on("click", function(){
-		var allTabsId = new Array();
-		var allTabsTitle = new Array();
-		var moveTabsId = new Array();
-		var windowObject = {id:""};
-		var moveProp = {windowId: "", index: -1};
-		var cont = 0;
-		var keyword = {title: document.getElementById('Separar').value};
-		if (keyword.title != "")
-		{
-			chrome.tabs.query({}, function(tabs){
-			keyword.title = keyword.title.toLowerCase();
-			/*Gets the keyword including tabs*/
-			for(var i = 0; i < tabs.length; i++){
-				allTabsId[i] = tabs[i].id;
-				allTabsTitle[i] = tabs[i].title;
-				allTabsTitle[i] = allTabsTitle[i].toLowerCase();
-			}
-
-			var moveTabsFirstID;
-			for(var i = 0; i < tabs.length; i++)
-			{
-				if(allTabsTitle[i].indexOf(keyword.title) > -1)
-				{
-					if(cont == 0)
-					{
-						moveTabsFirstID = allTabsId[i];
-						cont++;
-					}
-					else
-					{
-						moveTabsId[cont-1] = allTabsId[i];
-						cont++;
-					}
-				}
-			}
-
-			var windowsCreateData = {tabId: moveTabsFirstID};
-			chrome.windows.create(windowsCreateData, function(windowObject){
-				moveProp.windowId = windowObject.id;
-				chrome.tabs.move(moveTabsId, moveProp, function(){});
-				});
-			});
-		}
+	$("#inputKeyword").focus();
+	$('#inputKeyword').on("change paste keyup", function(){
+		var value = document.getElementById('inputKeyword').value;
+		document.getElementById('separar').disabled = (value == "") ? true : false;
+		document.getElementById('guardar').disabled = (value == "") ? true : false;
 	});
 
-	$("#guardar").on("click", function(){
-		var allTabsId = new Array();
-		var allTabsURL = {url: new Array() };
-		var allTabsTitle = new Array();
-		var cont = 0;
-		var keyword = {parentId: document.getElementById('Separar').value, title: document.getElementById('Separar').value};
-		function obj_bookmark(){
-			this.parentId = null,
-			this.title = "",
-			this.url = ""
-		}
-		var bookmark = [];
-		var theBookmarkGod = {parentId: null, url: null, title: null};
-		console.log("entra");
-		chrome.tabs.query({}, function(tabs){
-		console.log("Query");
+	$('#inputKeyword').on("click", function(){
+		$("#guardarAllInvisible").hide();
+	});
 
-		keyword.title = keyword.title.toLowerCase();
-		/*Gets the keyword including tabs*/
-		for(var i = 0; i < tabs.length; i++){
-			allTabsId[i] = tabs[i].id;
-			allTabsURL.url[i] = tabs[i].url;
-			allTabsTitle[i] = tabs[i].title;
-			allTabsTitle[i] = allTabsTitle[i].toLowerCase();
-		}
-
-		for(var i = 0; i < tabs.length; i++)
-		{
-			if(allTabsTitle[i].indexOf(keyword.title) > -1)
-			{
-				bookmark[cont] = new obj_bookmark();
-				bookmark[cont].url = allTabsURL.url[i];
-				bookmark[cont].title = allTabsTitle[i];
-				cont++;
-			}
-		}
-
-		var btnArray = {id: "null", title: keyword.title};
-
-		chrome.bookmarks.create({
-			'title': keyword.title
-		},function(btnArray){
-			for(var i = 0; i < cont; i++)
-			{
-				theBookmarkGod.parentId = btnArray.id;
-				theBookmarkGod.url = bookmark[i].url;
-				theBookmarkGod.title = bookmark[i].title;
-				chrome.bookmarks.create(theBookmarkGod);
-			}
-		});
-
-		var parametro = "Saved in Bookmark folder: \"" + keyword.title + '\"';
-		document.getElementById('invTxtBox').innerHTML = parametro;
-		$("#invisibleTxtBox").show();
-
-		});
+	$("#separar").on("click", function(){
+		$("#guardarAllInvisible").hide();
+		var keyword = document.getElementById('inputKeyword').value;
+		keyword = keyword.toLowerCase();
+		filter(keyword);
 	});
 
 	$("#merge").on("click", function(){
-		var allTabsId = new Array();
-		var allTabsTitle = new Array();
-		var moveTabsId = new Array();
-		var windowObject = {id:""};
-		var moveProp = {windowId: "", index: -1};
-		var cont = 0;
-		chrome.tabs.query({}, function(tabs){
+		$("#guardarAllInvisible").hide();
+		filter("");
+	});
 
-		for(var i=1; i<tabs.length; i++)
-		{
-			moveTabsId[i-1] = tabs[i].id;
-		}
+	$("#guardar").on("click", function(){
+		$("#guardarAllInvisible").hide();
+		var keyword = document.getElementById('inputKeyword').value;
+		keyword = keyword.toLowerCase();
+		save(keyword, keyword);
+	});
 
-		var windowsCreateData = {tabId: tabs[0].id};
-		chrome.windows.create(windowsCreateData, function(windowObject){
-			moveProp.windowId = windowObject.id;
-			chrome.tabs.move(moveTabsId, moveProp, function(){});
-			});
-		});
+	$("#guardarAll").on("click", function(){
+		$('#guardarAllInvisible').show();
+		$('#inputName').select();
+	});
 
+	$("#Confirm").on("click", function(){
+		var folderName = document.getElementById('inputName').value;
+		save("", folderName);
+		$("#guardarAllInvisible").hide();
 	});
 
 });
 
+var filter = function(keyword){
+	var moveTabsId = [];
+	var moveProp = {windowId: "", index: -1};
+	var currentWindow = {};
 
+	chrome.windows.getCurrent({}, function(cwindow){
+		currentWindow = cwindow;
+	});
+
+	chrome.tabs.query({}, function(tabs){
+		for(var i=0; i<tabs.length; i++)
+		{
+			var title = (tabs[i].title).toLowerCase();
+			if(title.indexOf(keyword) > -1 || keyword == "")
+			{
+				moveTabsId.push(tabs[i].id);
+			}
+		}
+
+		var windowsCreateData = {
+			tabId: moveTabsId[0],
+			type: "normal"
+		};
+
+		if(keyword == "")
+		{
+			if(currentWindow.state != "maximized")
+			{
+				windowsCreateData.width = currentWindow.width;
+				windowsCreateData.height = currentWindow.height;
+			}
+			else
+			{
+				windowsCreateData.state = "maximized";
+			}
+		}
+
+		chrome.windows.create(windowsCreateData, function(windowObject){
+			moveProp.windowId = windowObject.id;
+			moveTabsId.splice(0,1);
+			chrome.tabs.move(moveTabsId, moveProp, function(){});
+		});
+	});
+};
+
+var save = function(keyword, folderName){
+	chrome.tabs.query({}, function(tabs){
+		var folderProp = { title: folderName }
+		chrome.bookmarks.create(folderProp, function(folderNode){
+			for(var i=0; i<tabs.length; i++)
+			{
+				var title = (tabs[i].title).toLowerCase();
+				if(title.indexOf(keyword) > -1 || keyword == "")
+				{
+					var bookmark = {
+						parentId: folderNode.id,
+						url: tabs[i].url,
+						title: tabs[i].title
+					};
+					chrome.bookmarks.create(bookmark, function(){});
+				}
+			}
+		});
+		var parametro = "Saved in Bookmark folder: \"" + folderName + '\"';
+		document.getElementById('invTxtBox').innerHTML = parametro;
+		$("#invisibleTxtBox").show();
+	});
+};
 
 
 /*

@@ -14,13 +14,20 @@
         font-size: 100%;
         /*background-color: #9e9e9e;*/
       }
-      #status {
-        /* avoid an excessively wide status text */
-        white-space: pre;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        max-height: 400px;
-        max-width: 400px;
+      #inputKeyword {
+        margin: 5px 0px 10px 0px; /* top right bottom left */
+        width: 150px;
+      }
+      .buttons {
+        width: 74px;
+        margin: 0px 0px 2.5px 0px;
+      }
+      #guardarAllInvisible {
+        width: 150px;
+      }
+      .inputInvisible {
+        width: 70px;
+        margin: 0px 0px 2.5px 0px;
       }
     </style>
 
@@ -33,12 +40,18 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
     
   </head>
+
   <body>
-  Keyword: <input type="text" id="Separar" name="fname"><br>
-  <input id="separar" type="button" value="Separate">
-  <input id="guardar" type="button" value="Save">
-  <input id="merge" type="button" value="Merge">
-  <div id="status"></div>
+  Keyword: <input type="text" id="inputKeyword" name="fname" placeholder="Enter a keyword">
+  <input id="separar" class="buttons" type="button" value="Separate" title="Separate the tabs that match your keyword in a new window" disabled>
+  <input id="guardar" class="buttons" type="button" value="Save" title="Saves the tabs that match your keyword in a bookmark folder" disabled>
+  <input id="merge" class="buttons" type="button" value="Merge all" title="Merges all your tabs and windows into a single new window">
+  <input id="guardarAll" class="buttons" type="button" value="Save all" title="Saves all your tabs in a bookmark folder">
+  <div id="guardarAllInvisible">
+    <p>Choose a name for the bookmark folder where all tabs are going to be stored</p>
+    <input type="text" class="inputInvisible" id="inputName" value="All Tabs">
+    <input id="Confirm" class="inputInvisible" type="button" value="Confirm">
+  </div>
   <script src="Scripts/functions.js" type="text/JavaScript"></script>
   <div id = "invisibleTxtBox">
     <p id ="invTxtBox" type = "text" name = "mensaje" style = "color:green;"></p>
